@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<head>
+    <title>login</title>
+</head>
+<body>
+    <div class="box">
+        <h2>Login</h2>
+        <form action="login.php" method="POST">
+            <label>Email</label><br>
+            <input type="text" name="email" placeholder="Email" required><br>
+            <label>Password</label><br>
+            <input type="password" name="password" placeholder="Password" id="password" required><br>
+            <input type="checkbox" id="showPass"> Show Password<br>
+            <button type="submit">Enter</button>
+        </form>
+        <a href="forgotpassword.html">Forgot Password</a> <br>
+        <a href="signup.html">New? Sign Up</a>
+    </div>
+    <script>
+        document.getElementById("showPass").addEventListener("click", function() {
+            const pw = document.getElementById("password");
+            pw.type = this.checked ? "text" : "password";
+        });
+    </script>
+</body>
+</html>
