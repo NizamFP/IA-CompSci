@@ -22,8 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $reset_link = "http://youtube.com";
             $otp = random_int(100000, 999999);
             $hashedOtp = password_hash($otp, PASSWORD_DEFAULT);
-            $expiry = date('Y-m-d H:i:s', time() + 300); // Expire in 5 minutes
-
+            $expiry = date('Y-m-d H:i:s', time() + 300); 
             pg_query_params($conn, 
                 "INSERT INTO password_resets (email, token, expires_at)
                  VALUES ($1, $2, $3)
@@ -38,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $mail->Host = 'smtp.gmail.com';
                 $mail->SMTPAuth = true;
                 $mail->Username = 'nizam.fprayogo@gmail.com'; 
-                $mail->Password = 'fqbv polm skmo ywzv'; // Replace with App Password
+                $mail->Password = 'fqbv polm skmo ywzv'; 
                 $mail->SMTPSecure = 'tls';
                 $mail->Port = 587;
 
@@ -54,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ";
                 $mail->AltBody = "Your OTP is: $otp. It will expire in 5 minutes.";
                 $mail->send();
-                header("Location: forgotpassword.html?msg=OTP sent!");
+                header("Location: verifyotp.php?email=" . urlencode($email));                
                 exit();
             } catch (Exception $e) {
                 echo "Email could not be sent. Mailer Error: {$mail->ErrorInfo}";

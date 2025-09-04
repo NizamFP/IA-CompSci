@@ -27,7 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             if (password_verify($password, $row['password_hash'])) {
                 $_SESSION['user_id'] = $row['id'];
                 $_SESSION['email'] = $row['email'];
-                header("Location: dashboard.php");
+                header("Location: dashboard.html");
             } else {
                 $_SESSION['message'] = "❌ Incorrect password.";
                 header("Location: login.php");

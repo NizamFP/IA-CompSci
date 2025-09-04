@@ -16,9 +16,7 @@
 <body>
   <h2>Verify Your Email</h2>
   <form action="verifyotp.php" method="POST">
-    <label for="email">Email:</label><br>
-    <input type="email" id="email" name="email" required><br><br>
-
+    <input type="hidden" name="email" value="<?php echo htmlspecialchars($email); ?>">
     <label for="otp">Enter OTP:</label><br>
     <input type="text" id="otp" name="otp" maxlength="6" required><br><br>
 

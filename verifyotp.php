@@ -11,7 +11,7 @@ if (!$conn) {
 $message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = trim($_POST['email'] ?? '');
+    $email = $_GET['email'] ?? '';
     $enteredOtp = trim($_POST['otp'] ?? '');
 
     if (!empty($email) && !empty($enteredOtp)) {
@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message = "❌ OTP has expired. Please request a new one.";
             } elseif (password_verify($enteredOtp, $hashedOtp)) {
                 pg_query_params($conn, "DELETE FROM password_resets WHERE email = $1", [$email]);
-                header("Location: verified.html");
+                header("Location: login.html");
                 exit();
             } else {
                 $message = "❌ Invalid OTP. Please try again.";
