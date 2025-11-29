@@ -3,6 +3,7 @@ session_start();
 include("config.php");
 
 $conn = pg_connect("host=" . DB_HOST . " dbname=" . DB_NAME . " user=" . DB_USER . " password=" . DB_PASS);
+$message = "";
 
 if (!$conn) {
     die("❌ Connection failed.");
@@ -25,18 +26,51 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             if (password_verify($password, $row['password_hash'])) {
                 $_SESSION['user_id'] = $row['id'];
                 $_SESSION['email'] = $row['email'];
-                echo "✅ Login jsdzjghdjgndjfgk! Welcome, " . htmlspecialchars($row['email']);
+                $message = "✅ Login successful! Welcome, " . htmlspecialchars($row['email']);
                 // Example: redirect to dashboard
                 // header("Location: dashboard.php");
                 // exit;
             } else {
-                echo "❌ Incorrect password.";
+                $message = "❌ Incorrect password.";
             }
         } else {
-            echo "❌ No account found with that email.";
+            $message = "❌ No account found with that email.";
         }
     } else {
-        echo "⚠️ Please enter both email and password.";
+        $message = "⚠️ Please enter both email and password.";
     }
 }
 ?>
+<!DOCTYPE html>
+<html>
+<body>
+
+
+
+<form method="POST">
+    <label>Email:</label><br>
+    <input type="email" name="email" required><br><br>
+
+    <label>Password:</label><br>
+    <input type="password" id="password" name="password" required> <br>
+    <input type="checkbox" id="showPassword" > Show Password<br>
+    <?php if (!empty($message)) : ?>
+    <label><strong><?php echo $message; ?></strong></label> <br>
+    <?php endif; ?>
+    <button type="submit">Login</button>
+    <br><br>
+    <a href="forgotpassword.html">Forgot Password?</a><br>
+    <a href="signup.html">Don't have an account? Sign Up</a>
+</form>
+
+</body>
+</html>
+<script>
+    const passwordField = document.getElementById('password');
+    const toggle = document.getElementById('showPassword');
+
+    toggle.addEventListener('change', function () {
+        passwordField.type = this.checked ? 'text' : 'password';
+    });
+</script>
+<?php

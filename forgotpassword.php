@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $result = pg_query_params($conn, $query, [$email]);
 
         if ($result && pg_num_rows($result) > 0) {
-            $reset_link = "http://youtube.com";
+            $reset_link = "...";
             $otp = random_int(100000, 999999);
             $hashedOtp = password_hash($otp, PASSWORD_DEFAULT);
             $expiry = date('Y-m-d H:i:s', time() + 300); // Expire in 5 minutes
@@ -54,13 +54,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ";
                 $mail->AltBody = "Your OTP is: $otp. It will expire in 5 minutes.";
                 $mail->send();
-                header("Location: forgotpassword.html?msg=OTP sent!");
+                header("Location: verifyotp.php?email=" . urlencode($email));
                 exit();
             } catch (Exception $e) {
                 echo "Email could not be sent. Mailer Error: {$mail->ErrorInfo}";
             }
         } else {
-            header("Location: verifyotp.html?msg=sent");
+            header("Location: verifyotp.php?msg=sent");
             exit();
         }
     } else {

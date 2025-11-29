@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<body style="margin:0; padding:0; background:#f4f4f5; font-family:Arial, sans-serif;">
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" style="padding:20px 0; background:#f4f4f5;">
+  <tr>
+    <td align="center">
+
+      <!-- Main container -->
+      <table width="600" border="0" cellspacing="0" cellpadding="0" style="background:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.06);">
+
+        <!-- Header -->
+        <tr>
+          <td align="center" style="background:#06b6d4; padding:18px;">
+            <img src="https://via.placeholder.com/180x40?text=LOGO" width="180" alt="Logo" style="display:block;">
+          </td>
+        </tr>
+
+        <!-- Content -->
+        <tr>
+          <td style="padding:24px; color:#4b5563; font-size:15px;">
+
+            <h1 style="font-size:20px; margin:0 0 12px 0; color:#111827; font-weight:bold;">
+              Hai {{first_name}}, selamat bergabung!
+            </h1>
+
+            <p style="margin:0 0 14px 0; line-height:1.5;">
+              Terima kasih sudah mendaftar di <b>[Nama Acara / Layanan]</b>.  
+              Untuk menyelesaikan pendaftaran Anda, klik tombol di bawah ini:
+            </p>
+
+            <!-- BUTTON (table layout — Gmail friendly) -->
+            <table align="center" border="0" cellspacing="0" cellpadding="0" style="margin:20px auto;">
+              <tr>
+                <td bgcolor="#10b981" style="border-radius:6px; text-align:center;">
+                  <a href="{{confirm_link}}"
+                    style="display:inline-block; padding:12px 22px; font-size:15px; color:#ffffff; text-decoration:none; font-weight:bold; border-radius:6px;">
+                    Konfirmasi Pendaftaran
+                  </a>
+                </td>
+              </tr>
+            </table>
+
+            <p style="margin:0 0 12px 0; font-size:14px; line-height:1.5;">
+              Jika tombol tidak berfungsi, salin link berikut dan buka di browser Anda:
+            </p>
+
+            <p style="font-size:13px; word-break:break-all; margin:0 0 18px 0;">
+              <a href="{{confirm_link}}" style="color:#06b6d4;">{{confirm_link}}</a>
+            </p>
+
+            <hr style="border:none; border-top:1px solid #e5e7eb; margin:18px 0;">
+
+            <p style="font-size:14px; margin:0 0 12px 0;">Butuh bantuan? Balas email ini kapan pun.</p>
+
+            <p style="font-size:14px; margin:0;">
+              Salam hangat,<br>
+              <b>Tim [Nama Anda]</b>
+            </p>
+
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td align="center" style="padding:16px; font-size:12px; color:#9ca3af;">
+            Anda menerima email ini karena mendaftar di [Nama Acara / Layanan].<br>
+            <a href="{{unsubscribe_link}}" style="color:#9ca3af; text-decoration:underline;">Berhenti berlangganan</a>
+          </td>
+        </tr>
+
+      </table>
+
+    </td>
+  </tr>
+</table>
+
+</body>
+</html>
