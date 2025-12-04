@@ -28,7 +28,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $_SESSION['email'] = $row['email'];
                 $message = "✅ Login successful! Welcome, " . htmlspecialchars($row['email']);
                 // Example: redirect to dashboard
-                // header("Location: dashboard.php");
+                header("Location: dashboard.php");
                 // exit;
             } else {
                 $message = "❌ Incorrect password.";

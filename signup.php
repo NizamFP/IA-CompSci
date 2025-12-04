@@ -1,43 +1,96 @@
 <?php
-// Connect to PostgreSQL
+session_start();
+include("mailer.php");
 include("config.php");
-$conn = pg_connect("host=" . DB_HOST . " dbname=" . DB_NAME . " user=" . DB_USER . " password=" . DB_PASS);
-if (!$conn) {
-    die("Connection failed: " . pg_last_error());
-}
 
 $message = '';
+$email = '';
+
+$conn = pg_connect("host=" . DB_HOST . " dbname=" . DB_NAME . " user=" . DB_USER . " password=" . DB_PASS);
+if (!$conn) {
+    $message = "Connection failed: " . pg_last_error();
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = trim($_POST['email']);
-    $password = trim($_POST['password']);
+    $email = trim($_POST['email'] ?? '');
+    $password = trim($_POST['password'] ?? '');
 
-    // 1. Cek apakah email sudah dipakai
-    $check = pg_query_params($conn, "SELECT * FROM users WHERE email=$1", [$email]);
-    if (pg_num_rows($check) > 0) {
-        $message = "Email already used.";
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $message = "Alamat email tidak valid.";
+    } elseif ($password === '') {
+        $message = "Masukkan password.";
+    } elseif (!$conn) {
+        $message = "Database tidak tersedia. Coba lagi nanti.";
     } else {
-        // 2. Generate OTP
-        $otp = random_int(100000, 999999);
-        $hashedOtp = password_hash($otp, PASSWORD_DEFAULT);
-        $expires = date('Y-m-d H:i:s', time() + 300);
+        // case-insensitive check
+        $check = pg_query_params($conn, "SELECT 1 FROM users WHERE LOWER(email) = LOWER($1) LIMIT 1", [$email]);
 
-        // 3. Simpan ke table verification
-        pg_query_params($conn,
-            "INSERT INTO email_verification (email, otp, expires_at)
-             VALUES ($1, $2, $3)
-             ON CONFLICT (email) DO UPDATE SET otp=$2, expires_at=$3",
-            [$email, $hashedOtp, $expires]
-        );
+        if ($check === false) {
+            $message = "Kesalahan database: " . pg_last_error($conn);
+        } elseif (pg_num_rows($check) > 0) {
+            $message = "Email sudah digunakan.";
+        } else {
+            $otp = random_int(100000, 999999);
+            $hashedOtp = password_hash((string)$otp, PASSWORD_DEFAULT);
+            $expires = date('Y-m-d H:i:s', time() + 300);
 
-        // 4. Kirim OTP via email
-        sendVerificationEmail($email, $otp);
+            $res = pg_query_params($conn,
+                "INSERT INTO email_verification (email, otp, expires_at)
+                 VALUES ($1, $2, $3)
+                 ON CONFLICT (email) DO UPDATE SET otp = EXCLUDED.otp, expires_at = EXCLUDED.expires_at",
+                [$email, $hashedOtp, $expires]
+            );
 
-        // 5. Store TEMP password di session
-        $_SESSION['pending_password'] = password_hash($password, PASSWORD_DEFAULT);
+            if ($res === false) {
+                $message = "Gagal menyimpan kode verifikasi: " . pg_last_error($conn);
+            } else {
+                // kirim email verifikasi (fungsi di mailer.php)
+                sendVerificationEmail($email, $otp);
 
-        // 6. Redirect user ke page Verify
-        header("Location: verifyemail.php?email=" . urlencode($email));
-        exit;
+                // simpan password sementara (hash) untuk proses verifikasi
+                $_SESSION['pending_password'] = password_hash($password, PASSWORD_DEFAULT);
+
+                header("Location: verifyemail.php?email=" . urlencode($email));
+                exit;
+            }
+        }
     }
 }
 ?>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Sign up</title>
+</head>
+<body>
+    <div class="box">
+        <h2>Sign Up</h2>
+
+        <?php if ($message !== ''): ?>
+            <p class="feedback"><strong><?php echo htmlspecialchars($message); ?></strong></p>
+        <?php endif; ?>
+
+        <form action="" method="POST">
+            <label>Email</label> <br>
+            <input type="email" name="email" placeholder="Email" required value="<?php echo htmlspecialchars($email); ?>"><br>
+
+            <label>Password</label> <br>
+            <input type="password" name="password" placeholder="Password" id="password" required><br>
+
+            <input type="checkbox" id="showPass"> Show Password<br><br>
+
+            <button type="submit">Enter</button>
+        </form>
+
+        <a href="login.php">Already have an account? Sign in</a>
+    </div>
+
+    <script>
+        document.getElementById("showPass").addEventListener("click", function() {
+            const pw = document.getElementById("password");
+            pw.type = this.checked ? "text" : "password";
+        });
+    </script>
+</body>
+</html>
