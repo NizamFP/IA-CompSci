@@ -8,32 +8,67 @@ if (!$conn) {
 }
 
 $otpVerified = false;
+$message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = trim($_POST['email'] ?? '');
-    $otpInput = trim($_POST['otp'] ?? '');
+    // If user submits new password form
+    if (isset($_POST['new_password']) || isset($_POST['confirm_password'])) {
+        $email = trim($_POST['email'] ?? '');
+        $newPass = trim($_POST['new_password'] ?? '');
+        $confirm = trim($_POST['confirm_password'] ?? '');
 
-    if (empty($email) || empty($otpInput)) {
-        $message = "⚠️ Please enter your OTP.";
-    } else {
-        $query = "SELECT token, expires_at FROM password_resets WHERE email = $1 LIMIT 1";
-        $result = pg_query_params($conn, $query, [$email]);
-
-        if ($result && pg_num_rows($result) > 0) {
-            $row = pg_fetch_assoc($result);
-            $hashedOtp = $row['token'];
-            $expiresAt = strtotime($row['expires_at']);
-
-            if (time() > $expiresAt) {
-                $message = "❌ OTP expired. Request a new one.";
-            } else if (password_verify($otpInput, $hashedOtp)) {
-                $message = "✅ OTP Verified! Please enter your new password.";
-                $otpVerified = true;
-            } else {
-                $message = "❌ Incorrect OTP. Try again.";
-            }
+        if ($email === '' || $newPass === '' || $confirm === '') {
+            $message = "⚠️ Semua field harus diisi.";
+        } elseif ($newPass !== $confirm) {
+            $message = "❌ Password dan konfirmasi tidak cocok.";
+            $otpVerified = true; // tetap tampilkan form ubah password
+        } elseif (strlen($newPass) < 8) {
+            $message = "❌ Password minimal 8 karakter.";
+            $otpVerified = true;
         } else {
-            $message = "⚠️ No OTP found for this email.";
+            $hashed = password_hash($newPass, PASSWORD_DEFAULT);
+            $update = pg_query_params($conn, "UPDATE users SET password_hash = $1 WHERE LOWER(email) = LOWER($2)", [$hashed, $email]);
+
+            if ($update === false) {
+                $message = "❌ Gagal memperbarui password: " . pg_last_error($conn);
+                $otpVerified = true;
+            } elseif (pg_affected_rows($update) === 0) {
+                $message = "⚠️ Tidak ada akun dengan email tersebut.";
+            } else {
+                // hapus token/reset entry
+                pg_query_params($conn, "DELETE FROM password_resets WHERE LOWER(email) = LOWER($1)", [$email]);
+                // sukses -> redirect ke halaman login
+                header("Location: login.php?reset=success");
+                exit;
+            }
+        }
+    } else {
+        // OTP verification branch
+        $email = trim($_POST['email'] ?? '');
+        $otpInput = trim($_POST['otp'] ?? '');
+
+        if (empty($email) || empty($otpInput)) {
+            $message = "⚠️ Please enter your OTP.";
+        } else {
+            $query = "SELECT token, expires_at FROM password_resets WHERE LOWER(email) = LOWER($1) LIMIT 1";
+            $result = pg_query_params($conn, $query, [$email]);
+
+            if ($result && pg_num_rows($result) > 0) {
+                $row = pg_fetch_assoc($result);
+                $hashedOtp = $row['token'];
+                $expiresAt = strtotime($row['expires_at']);
+
+                if (time() > $expiresAt) {
+                    $message = "❌ OTP expired. Request a new one.";
+                } else if (password_verify($otpInput, $hashedOtp)) {
+                    $message = "✅ OTP Verified! Please enter your new password.";
+                    $otpVerified = true;
+                } else {
+                    $message = "❌ Incorrect OTP. Try again.";
+                }
+            } else {
+                $message = "⚠️ No OTP found for this email.";
+            }
         }
     }
 }
